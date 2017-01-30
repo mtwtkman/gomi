@@ -4,7 +4,6 @@ import { Image, TextField } from './component.js'
 
 
 // ctl00$cphMain$
-
 let state = {
   txtTel1: null,
   txtTel2: null,
@@ -32,19 +31,25 @@ let state = {
 for (var key in state) {
   state[`update_${key}`] = val => {
     state[key] = val;
-    console.log(state[key]);
   };
 }
 
 export default {
   oninit: vnode => {
     vnode.state.data = state;
+    vnode.state.cityCode = /\d+/.exec(m.route.get())[0];
+    vnode.state.streets = m.request({
+      url: `http://tv.tokyokankyo.or.jp/pag/InputVouchers.aspx?CityCode=${vnode.state.cityCode}&xMode=3`,
+      method: 'GET'
+    }).then(reponse => {
+      console.log(response);
+    });
   },
   oncreate: () => {
     componentHandler.upgradeAllRegistered();
   },
   view: vnode => {
-    const cityName = findCityName(/\d+/.exec(m.route.get())[0]);
+    const cityName = findCityName(vnode.state.cityCode);
     return m('div',
       m('h1', cityName),
       m(Image, { cityName: cityName }),
@@ -58,7 +63,7 @@ export default {
         m('tbody',
           m('tr',
             m('td.mdl-data-table__cell--non-numeric', '排出方法'),
-            m('td', { style: 'text-align:center;' }, '収集(固定)')
+            m('td', { style: 'text-align:center;' }, '収集')
           ),
           m('tr',
             m('td.mdl-data-table__cell--non-numeric', '電話番号'),

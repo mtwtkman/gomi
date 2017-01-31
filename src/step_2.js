@@ -3,47 +3,58 @@ import { findCityName } from './util.js'
 import { Image, TextField } from './component.js'
 
 
-// ctl00$cphMain$
-let state = {
-  txtTel1: null,
-  txtTel2: null,
-  txtTel3: null,
-  txtName1: null,
-  txtName2: null,
-  txtKana1: null,
-  txtKana2: null,
-  lstStreet: null,
-  cmdStreet: null,
-  lstChome: null,
-  txtBan: null,
-  txtGo: null,
-  txtBldg: null,
-  txtRoom: null,
-  lstOutPlace: null,
-  txtMail1: null,
-  txtMail2: null,
-  hidMail: null,
-  txtDayTel: null,
-  hidRecStartDt: null,
-  hidRecStartTm: null
-};
-
-for (var key in state) {
-  state[`update_${key}`] = val => {
-    state[key] = val;
-  };
-}
-
 export default {
   oninit: vnode => {
-    vnode.state.data = state;
+    vnode.state.data = {
+      txtTel1: null,
+      txtTel2: null,
+      txtTel3: null,
+      txtName1: null,
+      txtName2: null,
+      txtKana1: null,
+      txtKana2: null,
+      lstStreet: null,
+      cmdStreet: null,
+      lstChome: null,
+      txtBan: null,
+      txtGo: null,
+      txtBldg: null,
+      txtRoom: null,
+      lstOutPlace: null,
+      txtMail1: null,
+      txtMail2: null,
+      hidMail: null,
+      txtDayTel: null,
+      hidRecStartDt: null,
+      hidRecStartTm: null
+    };
+    for (var key in vnode.state.data) {
+      vnode.state[`update_${key}`] = val => {
+        vnode.state.data[key] = val;
+      };
+    }
+
     vnode.state.cityCode = /\d+/.exec(m.route.get())[0];
     vnode.state.streets = m.request({
       url: `http://tv.tokyokankyo.or.jp/pag/InputVouchers.aspx?CityCode=${vnode.state.cityCode}&xMode=3`,
-      method: 'GET'
-    }).then(reponse => {
+      method: 'GET',
+      deserialize: response => { return response; }
+    }).then(response => {
       console.log(response);
     });
+    vnode.state.params = {
+      __EVENTTARGET: null,
+      __EVENTARGUMENT: null,
+      __LASTFOCUS: null,
+      __VIEWSTATE: null,
+      __VIEWSTATEGENERATOR: null,
+      __SCROLLPOSITIONX: null,
+      __SCROLLPOSITIONY: null,
+      __EVENTVALIDATION: null
+    };
+    for (const field in vnode.state.data) {
+      vnode.state.params[`ctl00$cphMain$${field}`] = null;
+    }
   },
   oncreate: () => {
     componentHandler.upgradeAllRegistered();

@@ -1395,6 +1395,10 @@ os-tmpdir@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/os-tmpdir/-/os-tmpdir-1.0.2.tgz#bbe67406c79aa85c5cfec766fe5734555dfa1274"
 
+ospec@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/ospec/-/ospec-1.2.3.tgz#92e2a458d00ff8547ba03bb0fe859c69103b9f70"
+
 pako@~0.2.0:
   version "0.2.9"
   resolved "https://registry.yarnpkg.com/pako/-/pako-0.2.9.tgz#f3f7522f4ef782348da8161bad9ecfd51bf83a75"

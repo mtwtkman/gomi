@@ -5,7 +5,6 @@ import { Image, TextField } from './component.js'
 
 const PREFIX = 'ctl00$cphMain$';
 
-
 const Store = {
   cityCode: null,
   params: {
@@ -46,22 +45,23 @@ const Store = {
         method: 'GET',
         deserialize: response => { return response; }
       }).then(response => {
-        const findParam = name => {
-          const pattern = new RegExp(`id="${name}" value="(.+)"`);
-          const s = pattern.exec(response);
-          if (s && s.length === 2) {
-            return s[1];
-          }
-          return null;
-        };
-        Store.params.data.__EVENTTARGET = findParam('__EVENTTARGET');
-        Store.params.data.__EVENTTARGET = findParam('__EVENTTARGET');
-        Store.params.data.__LASTFOCUS = findParam('__LASTFOCUS');
-        Store.params.data.__VIEWSTATE = findParam('__VIEWSTATE');
-        Store.params.data.__SCROLLPOSITIONX = findParam('__SCROLLPOSITIONX');
-        Store.params.data.__SCROLLPOSITIONY = findParam('__SCROLLPOSITIONY');
-        Store.params.data.__EVENTVALIDATION = findParam('__EVENTVALIDATION');
-        Store.params.data.streets = [{value: 'hoge', name: 'fufufu'}];
+        const dom = new DOMParser().parseFromString(response, 'text/html');
+        Store.params.data.__EVENTTARGET = dom.getElementById('__EVENTTARGET').value;
+        Store.params.data.__EVENTTARGET = dom.getElementById('__EVENTTARGET').value;
+        Store.params.data.__LASTFOCUS = dom.getElementById('__LASTFOCUS').value;
+        Store.params.data.__VIEWSTATE = dom.getElementById('__VIEWSTATE').value;
+        Store.params.data.__SCROLLPOSITIONX = dom.getElementById('__SCROLLPOSITIONX').value;
+        Store.params.data.__SCROLLPOSITIONY = dom.getElementById('__SCROLLPOSITIONY').value;
+        Store.params.data.__EVENTVALIDATION = dom.getElementById('__EVENTVALIDATION').value;
+        const streets = Array.prototype.slice.call(dom.getElementById('ctl00_cphMain_lstStreet').children, 1);
+        Store.params.data.streets = [];
+        for (let i=0, l=streets.length; i<l; i++) {
+          const street = streets[i];
+          Store.params.data.streets.push({
+            value: street.value,
+            name: street.textContent
+          });
+        }
       });
     }
   },
@@ -77,7 +77,7 @@ export default {
   oninit: vnode => {
     vnode.state.store = Store;
     const cityCode = /\d+/.exec(m.route.get())[0];
-    vnode.state.store.params.fetch(vnode.state.cityCode);
+    vnode.state.store.params.fetch(cityCode);
     vnode.state.cityName = findCityName(cityCode);
   },
   oncreate: () => {
@@ -169,7 +169,7 @@ export default {
               m(TextField, {
                 style: 'width:90px; margin-right:20px;',
                 id: 'lastname-kana',
-                pattern: '^[ぁ-ん]+$ , [\u3041-\u309F]+',
+                pattern: '^[ぁ-ん]+$',
                 onchange: m.withAttr(
                   'value',
                   vnode.state.store.update(`${PREFIX}txtKana1`)
@@ -179,7 +179,7 @@ export default {
               m(TextField, {
                 style: 'width:90px;',
                 id: 'firstname-kana',
-                pattern: '^[ぁ-ん]+$ , [\u3041-\u309F]+',
+                pattern: '^[ぁ-ん]+$',
                 onchange: m.withAttr(
                   'value',
                   vnode.state.store.update(`${PREFIX}txtKana2`)

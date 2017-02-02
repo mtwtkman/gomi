@@ -39,7 +39,7 @@ export default {
             }, city.name);
           })
         ),
-        m('label.mdl-selectfield__label', { for: 'cities' }, '自治体を選択'),
+        m('label.mdl-selectfield__label', { for: 'cities' }, '自治体を選択')
       ),
       m('div#next-button .mdl-cell mdl-cell--12-col',
         m('button.mdl-button mdl-js-button mdl-button--raised mdl-button--colored', { onclick: vnode.state.next }, '決定')

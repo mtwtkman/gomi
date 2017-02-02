@@ -3,72 +3,95 @@ import { findCityName } from './util.js'
 import { Image, TextField } from './component.js'
 
 
-export default {
-  oninit: vnode => {
-    vnode.state.data = {
-      txtTel1: null,
-      txtTel2: null,
-      txtTel3: null,
-      txtName1: null,
-      txtName2: null,
-      txtKana1: null,
-      txtKana2: null,
-      lstStreet: null,
-      cmdStreet: null,
-      lstChome: null,
-      txtBan: null,
-      txtGo: null,
-      txtBldg: null,
-      txtRoom: null,
-      lstOutPlace: null,
-      txtMail1: null,
-      txtMail2: null,
-      hidMail: null,
-      txtDayTel: null,
-      hidRecStartDt: null,
-      hidRecStartTm: null
-    };
-    for (var key in vnode.state.data) {
-      vnode.state[`update_${key}`] = val => {
-        vnode.state.data[key] = val;
-      };
-    }
+const PREFIX = 'ctl00$cphMain$';
 
-    vnode.state.cityCode = /\d+/.exec(m.route.get())[0];
-    vnode.state.streets = m.request({
-      url: `http://tv.tokyokankyo.or.jp/pag/InputVouchers.aspx?CityCode=${vnode.state.cityCode}&xMode=3`,
-      method: 'GET',
-      deserialize: response => { return response; }
-    }).then(response => {
-      console.log(response);
-    });
-    vnode.state.params = {
+
+const Store = {
+  cityCode: null,
+  params: {
+    data: {
+      [`${PREFIX}txtTel1`]: null,
+      [`${PREFIX}txtTel2`]: null,
+      [`${PREFIX}txtTel3`]: null,
+      [`${PREFIX}txtName1`]: null,
+      [`${PREFIX}txtName2`]: null,
+      [`${PREFIX}txtKana1`]: null,
+      [`${PREFIX}txtKana2`]: null,
+      [`${PREFIX}lstStreet`]: null,
+      [`${PREFIX}cmdStreet`]: null,
+      [`${PREFIX}lstChome`]: null,
+      [`${PREFIX}txtBan`]: null,
+      [`${PREFIX}txtGo`]: null,
+      [`${PREFIX}txtBldg`]: null,
+      [`${PREFIX}txtRoom`]: null,
+      [`${PREFIX}lstOutPlace`]: null,
+      [`${PREFIX}txtMail1`]: null,
+      [`${PREFIX}txtMail2`]: null,
+      [`${PREFIX}hidMail`]: null,
+      [`${PREFIX}txtDayTel`]: null,
+      [`${PREFIX}hidRecStartDt`]: null,
+      [`${PREFIX}hidRecStartTm`]: null,
       __EVENTTARGET: null,
       __EVENTARGUMENT: null,
       __LASTFOCUS: null,
       __VIEWSTATE: null,
-      __VIEWSTATEGENERATOR: null,
       __SCROLLPOSITIONX: null,
       __SCROLLPOSITIONY: null,
-      __EVENTVALIDATION: null
-    };
-    for (const field in vnode.state.data) {
-      vnode.state.params[`ctl00$cphMain$${field}`] = null;
+      __EVENTVALIDATION: null,
+      streets: []
+    },
+    fetch: cityCode => {
+      m.request({
+        url: `http://tv.tokyokankyo.or.jp/pag/InputVouchers.aspx?CityCode=${cityCode}&xMode=3`,
+        method: 'GET',
+        deserialize: response => { return response; }
+      }).then(response => {
+        const findParam = name => {
+          const pattern = new RegExp(`id="${name}" value="(.+)"`);
+          const s = pattern.exec(response);
+          if (s && s.length === 2) {
+            return s[1];
+          }
+          return null;
+        };
+        Store.params.data.__EVENTTARGET = findParam('__EVENTTARGET');
+        Store.params.data.__EVENTTARGET = findParam('__EVENTTARGET');
+        Store.params.data.__LASTFOCUS = findParam('__LASTFOCUS');
+        Store.params.data.__VIEWSTATE = findParam('__VIEWSTATE');
+        Store.params.data.__SCROLLPOSITIONX = findParam('__SCROLLPOSITIONX');
+        Store.params.data.__SCROLLPOSITIONY = findParam('__SCROLLPOSITIONY');
+        Store.params.data.__EVENTVALIDATION = findParam('__EVENTVALIDATION');
+        Store.params.data.streets = [{value: 'hoge', name: 'fufufu'}];
+      });
     }
+  },
+  update: key => {
+    return value => {
+      Store.params.data[key] = value;
+    };
+  }
+};
+
+
+export default {
+  oninit: vnode => {
+    vnode.state.store = Store;
+    const cityCode = /\d+/.exec(m.route.get())[0];
+    vnode.state.store.params.fetch(vnode.state.cityCode);
+    vnode.state.cityName = findCityName(cityCode);
   },
   oncreate: () => {
     componentHandler.upgradeAllRegistered();
   },
   view: vnode => {
-    const cityName = findCityName(vnode.state.cityCode);
     return m('div',
-      m('h1', cityName),
-      m(Image, { cityName: cityName }),
+      m('h1', vnode.state.cityName),
+      m(Image, { cityName: vnode.state.cityName }),
       m('table.mdl-data-table mdl-js-data-table mdl-shadow--2dp',
         m('thead',
           m('tr',
             m('th.mdl-data-table__cell--non-numeric', { style: 'text-align:center;' }, '項目'),
-            m('th.mdl-data-table__cell--non-numeric', { style: 'text-align:center;' }, '値'),
+            m('th.mdl-data-table__cell--non-numeric', { style: 'text-align:center;' }, '値')
           )
         ),
         m('tbody',
@@ -86,7 +109,7 @@ export default {
                   pattern: '[0-9]{3}',
                   onchange: m.withAttr(
                     'value',
-                    vnode.state.data['update_txtTel1']
+                    vnode.state.store.update(`${PREFIX}txtTel1`)
                   ),
                   label: '数字3桁'
                 })
@@ -98,7 +121,7 @@ export default {
                   pattern: '[0-9]{4}',
                   onchange: m.withAttr(
                     'value',
-                    vnode.state.data['update_txtTel2']
+                    vnode.state.store.update(`${PREFIX}txtTel2`)
                   ),
                   label: '数字4桁'
               }),
@@ -109,7 +132,7 @@ export default {
                   pattern: '[0-9]{4}',
                   onchange: m.withAttr(
                     'value',
-                    vnode.state.data['update_txtTel3']
+                    vnode.state.store.update(`${PREFIX}txtTel3`)
                   ),
                   label: '数字4桁'
               })
@@ -124,7 +147,7 @@ export default {
                 pattern: '[^\x20-\x7E]+',
                 onchange: m.withAttr(
                   'value',
-                  vnode.state.data['update_txtName1']
+                  vnode.state.store.update(`${PREFIX}txtName1`)
                 ),
                 label: '姓'
               }),
@@ -134,7 +157,7 @@ export default {
                 pattern: '[^\x20-\x7E]+',
                 onchange: m.withAttr(
                   'value',
-                  vnode.state.data['update_txtName2']
+                  vnode.state.store.update(`${PREFIX}txtName2`)
                 ),
                 label: '名'
               })
@@ -149,7 +172,7 @@ export default {
                 pattern: '^[ぁ-ん]+$ , [\u3041-\u309F]+',
                 onchange: m.withAttr(
                   'value',
-                  vnode.state.data['update_txtKana1']
+                  vnode.state.store.update(`${PREFIX}txtKana1`)
                 ),
                 label: 'せい'
               }),
@@ -159,7 +182,7 @@ export default {
                 pattern: '^[ぁ-ん]+$ , [\u3041-\u309F]+',
                 onchange: m.withAttr(
                   'value',
-                  vnode.state.data['update_txtKana2']
+                  vnode.state.store.update(`${PREFIX}txtKana2`)
                 ),
                 label: 'めい'
               })
@@ -170,8 +193,14 @@ export default {
             m('td',
               m('div.mdl-selectfield mdl-js-selectfield mdl-selectfield--floating-label',
                 m('select#streets .mdl-selectfield__select', {
-                  onchange: m.withAttr('value', vnode.state.data['update_lstStreet'])
-                })
+                    onchange: m.withAttr('value', vnode.state.store.update(`${PREFIX}lstStreet`))
+                  },
+                  vnode.state.store.params.data.streets.map(street => {
+                    return m('option', {
+                      value: street.value
+                    }, street.name);
+                  })
+                )
               )
             )
           )
